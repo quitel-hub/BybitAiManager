@@ -1,0 +1,15 @@
+1) node.js -
+    npm init -y
+    npm install bybit-api dotenv
+2) .env -
+    API_KEY=
+    API_SECRET=
+3) запуск файла на нод 
+    node имя файла (пример node index.js)
+4) pip install pandas scikit-learn
+5)pip install joblib
+6)npm install axios
+7) TELEGRAM_TOKEN=
+   TELEGRAM_CHAT_ID=
+8) pip install xgboost
+9) npm install node-telegram-bot-api
