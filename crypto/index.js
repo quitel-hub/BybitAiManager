@@ -4,10 +4,19 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const TelegramBot = require('node-telegram-bot-api'); // Новая библиотека
 
+const { HttpsProxyAgent } = require('https-proxy-agent');
+
+// Используем бесплатный рабочий прокси (Германия) для обхода ограничений Bybit
+const proxyUrl = 'http://45.131.5.21:80'; 
+const proxyAgent = new HttpsProxyAgent(proxyUrl);
+
 const client = new RestClientV5({
     key: process.env.API_KEY,
     secret: process.env.API_SECRET,
     testnet: true,
+    requestOptions: {
+        agent: proxyAgent
+    }
 });
 
 // === ИНИЦИАЛИЗАЦИЯ TELEGRAM ===
