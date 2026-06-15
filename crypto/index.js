@@ -16,8 +16,8 @@ const ADMIN_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 // === НАСТРОЙКИ БОТА ===
 const TRADE_USDT = 10;      
-const PROFIT_TARGET = 1.01; 
-const DCA_DROP = 0.99;      
+const PROFIT_TARGET = 1.005; 
+const DCA_DROP = 0.995;      
 const CHECK_INTERVAL = 60 * 1000; 
 
 // === ПАМЯТЬ БОТА (State) ===
@@ -38,7 +38,8 @@ const mainMenu = {
             [{ text: '▶️ Запустить анализ', callback_data: 'start' }],
             [{ text: '⏸️ Остановить анализ', callback_data: 'stop' }],
             [{ text: '💼 Статус портфеля', callback_data: 'status' }],
-            [{ text: '🔄 Переобучить ИИ', callback_data: 'retrain' }]
+            [{ text: '🔄 Переобучить ИИ', callback_data: 'retrain' }],
+            [{ text: '🛒 Принудительная покупка', callback_data: 'force_buy' }]
         ]
     }
 };
@@ -51,7 +52,7 @@ bot.onText(/\/start/, (msg) => {
 });
 
 // Слушаем нажатия кнопок
-bot.on('callback_query', (query) => {
+bot.on('callback_query', async (query) => {
     if (query.message.chat.id.toString() !== ADMIN_CHAT_ID) return;
     const action = query.data;
     
@@ -96,8 +97,22 @@ bot.on('callback_query', (query) => {
             bot.sendMessage(ADMIN_CHAT_ID, '✅ <b>ИИ успешно переобучен на свежих данных!</b>', { parse_mode: 'HTML' });
         });
     }
+    else if (action === 'force_buy') {
+        if (isPositionOpen) {
+            bot.answerCallbackQuery(query.id, { text: 'Уже есть открытая позиция!', show_alert: true });
+        } else {
+            bot.sendMessage(ADMIN_CHAT_ID, '🛒 <b>Получение актуальной цены...</b>', { parse_mode: 'HTML' });
+            try {
+                const ticker = await client.getTickers({ category: 'spot', symbol: 'BTCUSDT' });
+                const currentPrice = parseFloat(ticker.result.list[0].lastPrice);
+                await executeTrade('Buy', currentPrice, 'Ручная тестовая покупка');
+            } catch (error) {
+                bot.sendMessage(ADMIN_CHAT_ID, `❌ Ошибка получения цены: ${error.message}`);
+            }
+        }
+    }
     
-    bot.answerCallbackQuery(query.id); // Убирает часики загрузки на кнопке
+    bot.answerCallbackQuery(query.id);
 });
 
 
